@@ -1,4 +1,7 @@
 
+using GrocerySales.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace GrocerySales.Api
 {
     public class Program
@@ -13,6 +16,9 @@ namespace GrocerySales.Api
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddDbContext<GrocerySalesDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DBDefault")));
 
             var app = builder.Build();
 
