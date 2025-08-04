@@ -1,5 +1,9 @@
 
+using GrocerySales.Abstractions.IRepository;
+using GrocerySales.Abstractions.IServices;
 using GrocerySales.Infrastructure.Data;
+using GrocerySales.Infrastructure.Repository;
+using GrocerySales.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,9 +13,14 @@ namespace GrocerySales.Api
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+
+            builder.Services.AddScoped<IBaseRepository, BaseRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             // Add services to the container.
 
@@ -63,6 +72,8 @@ namespace GrocerySales.Api
             builder.Services.AddDbContext<GrocerySalesContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddScoped<DatabaseSeeder>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -76,7 +87,21 @@ namespace GrocerySales.Api
 
             app.UseAuthorization();
 
+            
+
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+                await seeder.SeedAsync();
+            }
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             app.Run();
         }
