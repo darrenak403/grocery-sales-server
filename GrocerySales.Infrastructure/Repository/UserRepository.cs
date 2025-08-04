@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GrocerySales.Infrastructure.Repository
 {
     
-    public class UserRepository(GrocerySalesDbContext _context) : IUserRepository
+    public class UserRepository(GrocerySalesContext _context) : IUserRepository
     {
         public async Task<User?> GetByEmailAsync(string email)
         {
@@ -23,6 +23,16 @@ namespace GrocerySales.Infrastructure.Repository
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == email);
 
+        }
+
+        public Task<User?> GetByIdAsync(Guid? userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(User user)
+        {
+           _context.Users.Update(user); 
         }
     }
 }

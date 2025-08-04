@@ -10,6 +10,6 @@ namespace GrocerySales.Abstractions.IServices
 {
     public interface IAuthService
     {
-        Task<User?> LoginAsync(UserLoginRequest request);
+        Task<TokenResponse?> LoginAsync(UserLoginRequest request);
     }
 }

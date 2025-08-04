@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using GrocerySales.Abstractions.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace GrocerySales.Infrastructure.Data;
 
-public partial class GrocerySalesDbContext : DbContext
+public partial class GrocerySalesContext : DbContext
 {
-    public GrocerySalesDbContext()
+    public GrocerySalesContext()
     {
     }
 
-    public GrocerySalesDbContext(DbContextOptions<GrocerySalesDbContext> options)
+    public GrocerySalesContext(DbContextOptions<GrocerySalesContext> options)
         : base(options)
     {
     }
@@ -29,10 +30,6 @@ public partial class GrocerySalesDbContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

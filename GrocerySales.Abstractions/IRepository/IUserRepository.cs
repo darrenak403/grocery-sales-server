@@ -10,6 +10,7 @@ namespace GrocerySales.Abstractions.IRepository
     public interface IUserRepository
     {
         Task<User?> GetByEmailAsync(string email);
-
+        Task<User?> GetByIdAsync(Guid? userId);
+        void Update(User user);
     }
 }
