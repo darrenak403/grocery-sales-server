@@ -21,6 +21,7 @@ namespace GrocerySales.Api
             builder.Services.AddScoped<IBaseRepository, BaseRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IRoleRepository, RoleRepository>();  
 
             // Add services to the container.
 

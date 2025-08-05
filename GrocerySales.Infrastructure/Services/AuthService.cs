@@ -11,12 +11,13 @@ using GrocerySales.Abstractions.Entities;
 using GrocerySales.Abstractions.IRepository;
 using GrocerySales.Abstractions.IServices;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GrocerySales.Infrastructure.Services
 {
-    public class AuthService(IBaseRepository baseRepository, IUserRepository userRepository, IConfiguration configuration) : IAuthService
+    public class AuthService(IBaseRepository baseRepository, IUserRepository userRepository, IRoleRepository roleRepository, IConfiguration configuration) : IAuthService
     {
         public async Task<TokenResponse?> LoginAsync(UserLoginRequest request)
         {
@@ -33,15 +34,6 @@ namespace GrocerySales.Infrastructure.Services
 
             return await CreateTokenResponse(user);
         }
-
-        public async Task<TokenResponse?> RefreshTokenAsync(RefreshTokenRequest request)
-        {
-            User? user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
-            if (user is null)
-                return null;
-            return await CreateTokenResponse(user);
-        }
-
         private async Task<User?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
         {
             var user = await userRepository.GetByIdAsync(userId);
@@ -106,6 +98,60 @@ namespace GrocerySales.Infrastructure.Services
             rng.GetBytes(randomNumber);
 
             return Convert.ToBase64String(randomNumber);
+        }
+
+
+
+        public async Task<TokenResponse?> RefreshTokenAsync(RefreshTokenRequest request)
+        {
+            User? user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
+            if (user is null)
+                return null;
+            return await CreateTokenResponse(user);
+        }
+
+        public async Task<bool> CheckLoginAsync(UserLoginRequest request)
+        {
+            var user = await userRepository.GetByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return false;
+            }
+            if(new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+            {
+                return false;
+            }
+            return true; 
+        }
+
+        public async Task<bool> RegisterAsync(UserRegisterRequest request)
+        {
+            var existEmail = await userRepository.GetByEmailAsync(request.Email);
+            var existPhoneNumber = await userRepository.GetByPhoneNumberAsync(request.PhoneNumber); 
+            if (existEmail != null || existPhoneNumber != null)
+            {
+                return false; 
+            }
+
+            var role = await roleRepository.GetByNameAsync("Customer"); 
+            if(role == null)
+            {
+                return false;
+            }
+
+            var user = new User
+            {
+                UserId = Guid.NewGuid(),
+                Username = request.Username,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber,
+                RoleId = role.RoleId,
+                PasswordHash = new PasswordHasher<User>().HashPassword(null!, request.Password)
+            };
+            userRepository.Add(user);
+            await baseRepository.SaveChangesAsync();
+            return true;
+
         }
     }
 }
