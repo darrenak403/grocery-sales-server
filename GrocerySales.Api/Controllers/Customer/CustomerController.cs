@@ -1,4 +1,6 @@
-﻿using GrocerySales.Abstractions.Entities;
+﻿using GrocerySales.Abstractions.Dtos.Account;
+using GrocerySales.Abstractions.Dtos.User;
+using GrocerySales.Abstractions.Entities;
 using GrocerySales.Abstractions.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +45,14 @@ namespace GrocerySales.Api.Controllers.Customer
 
             await userService.UnbanAsync(userId);
             return Ok("User unbanned successfully");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> AddUser([FromBody] AccountRequest request)
+        {
+            var newUser = await userService.AddUserAsync(request);
+            return CreatedAtAction(nameof(GetAllUsersAsync), new { id = newUser?.UserId }, newUser);
         }
     }
 }
